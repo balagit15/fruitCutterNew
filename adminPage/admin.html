@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Question</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f7fa;
+    }
+    .container {
+      max-width: 600px;
+      margin-top: 50px;
+    }
+    .form-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .btn-submit {
+      width: 100%;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <h2>Add New Question</h2>
+      <form id="addQuestionForm">
+        <div class="form-group">
+          <label for="question">Question</label>
+          <input type="text" class="form-control" id="question" placeholder="Enter the question" required>
+        </div>
+        <div class="form-group">
+          <label for="option1">Option 1</label>
+          <input type="text" class="form-control" id="option1" placeholder="Enter first option" required>
+        </div>
+        <div class="form-group">
+          <label for="option2">Option 2</label>
+          <input type="text" class="form-control" id="option2" placeholder="Enter second option" required>
+        </div>
+        <div class="form-group">
+          <label for="option3">Option 3</label>
+          <input type="text" class="form-control" id="option3" placeholder="Enter third option" required>
+        </div>
+        <div class="form-group">
+          <label for="correctOption">Correct Option</label>
+          <select class="form-control" id="correctOption" required>
+            <option value="0">Option 1</option>
+            <option value="1">Option 2</option>
+            <option value="2">Option 3</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-submit">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    document.getElementById('addQuestionForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const question = document.getElementById('question').value;
+      const options = [
+        document.getElementById('option1').value,
+        document.getElementById('option2').value,
+        document.getElementById('option3').value
+      ];
+      const correctOption = parseInt(document.getElementById('correctOption').value);
+
+      fetch('http://localhost:5000/add-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question, options, correctOption })
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          this.reset(); // Reset form
+        })
+        .catch(error => {
+          alert('Error adding question');
+          console.error(error);
+        });
+    });
+  </script>
+</body>
+</html>

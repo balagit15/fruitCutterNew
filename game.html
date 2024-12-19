@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit Quiz Game</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1a1c20 0%, #2d3436 100%);
+      height: 100vh;
+      overflow: hidden;
+      background-image: url('images/bg6.jpg'); /* Add your background image path here */
+      background-size: cover; /* Ensures the image covers the entire screen */
+      background-position: center center; /* Centers the image */
+      background-attachment: fixed; /* Keeps the background fixed while scrolling */
+      cursor: none;
+    }
+
+    #final-score {
+      font-size: 1.5rem;
+      color: #fffae6;
+      margin-bottom: 20px;
+    }
+
+    /* Answer List */
+    #correct-answers-list {
+      text-align: left;
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #fff;
+      width: 100%;
+      max-height: 200px; /* Limit height of list */
+      overflow-y: auto; /* Allow scrolling */
+      margin-bottom: 40px; /* Increased space below the list */
+    }
+
+    #correct-answers-list li {
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .slice-trail {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+      height: 2px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .fruit-container {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      perspective: 1000px;
+      transform-style: preserve-3d;
+    }
+
+    .fruit-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .fruit-half {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      transform-origin: center;
+    }
+
+    .fruit-container.sliced .fruit-half.left {
+      animation: sliceLeft 0.5s forwards;
+    }
+
+    .fruit-container.sliced .fruit-half.right {
+      animation: sliceRight 0.5s forwards;
+    }
+
+    @keyframes sliceLeft {
+      to {
+        transform: rotateY(-90deg) translateX(-50%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes sliceRight {
+      to {
+        transform: rotateY(90deg) translateX(50%);
+        opacity: 0;
+      }
+    }
+
+    .juice-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    #question {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 30px;
+      border-radius: 15px;
+      max-width: 80%;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: #fff;
+      z-index: 100;
+      background: rgba(255, 99, 71, 0.8);
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 99, 71, 0.5);
+    }
+
+    .fruit-text {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: 16px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+    }
+
+    .circle {
+  position: fixed;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform, opacity;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+    /* Game Over Modal */
+    /* Game Over Modal */
+.game-over-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8); /* Semi-transparent dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Centered modal with gradient and styling */
+.modal-content {
+  background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Gradient background */
+  width: 80%; /* Adjust size */
+  max-width: 400px; /* Prevent it from being too large */
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(10px); /* Glassmorphism effect */
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5); /* Add depth */
+  animation: slideDown 0.5s ease-out; /* Entrance animation */
+}
+
+/* Animations for modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Updated buttons inside modal */
+.modal-content button {
+  margin: 10px 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.modal-content button:hover {
+  transform: scale(1.05);
+}
+
+.modal-content .btn-primary {
+  background-color: #4caf50; /* Green button */
+  color: white;
+}
+
+.modal-content .btn-primary:hover {
+  background-color: #3e8e41;
+}
+
+.modal-content .btn-danger {
+  background-color: #f44336; /* Red button */
+  color: white;
+}
+
+.modal-content .btn-danger:hover {
+  background-color: #d32f2f;
+}
+
+#leaderboard {
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      width: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      max-height: 80%;
+      overflow-y: auto;
+    }
+
+    #leaderboard h3 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      text-align: center;
+      color: #fffae6;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #leaderboard li {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #leaderboard li span {
+      font-size: 16px;
+    }
+
+    #user-details {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      color: white;
+      background: rgba(255, 99, 71, 0.8);
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255, 99, 71, 0.5);
+    }
+
+  </style>
+</head>
+<body>
+  <div id="user-details" style="position: absolute; top: 10px; left: 10px; color: white; font-size: 18px;"></div>
+  <div id="question"></div>
+  <div id="score">Score: 0</div>
+  <div id="leaderboard">
+    <h3>Leaderboard</h3>
+    <ul id="leaderboard-list"></ul>
+  </div>
+
+  
+
+  <div class="circles">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <!-- Add more circles as needed -->
+  </div>
+  
+
+
+  <div class="game-over-modal" id="game-over-modal">
+    <div class="modal-content">
+      <h2>Game Over!</h2>
+      <p id="final-score"></p>
+      <div id="correct-answers-list"></div>
+      <button class="btn btn-primary" onclick="resetGame()">Play Again</button>
+      <button class="btn btn-danger" onclick="exitGame()">Exit Game</button>
+    </div>
+  </div>
+
+  <script src="controller.js"></script>
+  <script>
+    // Display user details
+    const username = localStorage.getItem('username');
+    const college = localStorage.getItem('college');
+    if (username && college) {
+      document.getElementById('user-details').innerText = `Player: ${username} | College: ${college}`;
+    } else {
+      document.getElementById('user-details').innerText = 'Welcome to the game!';
+    }
+  </script>
+</body>
+
+</html>
